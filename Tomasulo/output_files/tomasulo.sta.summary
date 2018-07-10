@@ -1,0 +1,245 @@
+------------------------------------------------------------
+TimeQuest Timing Analyzer Summary
+------------------------------------------------------------
+
+Type  : Slow Model Setup 'KEY[0]'
+Slack : -12.949
+TNS   : -1013.252
+
+Type  : Slow Model Setup 'controle:c1|FU_add_sub:FU_add|Count:c|q[0]'
+Slack : -4.515
+TNS   : -36.333
+
+Type  : Slow Model Setup 'controle:c1|updateData[0]'
+Slack : -1.885
+TNS   : -13.783
+
+Type  : Slow Model Setup 'controle:c1|updateData[2]'
+Slack : -1.581
+TNS   : -8.367
+
+Type  : Slow Model Setup 'controle:c1|updateData[3]'
+Slack : -1.580
+TNS   : -8.600
+
+Type  : Slow Model Setup 'controle:c1|updateLabel[1]'
+Slack : -1.561
+TNS   : -4.666
+
+Type  : Slow Model Setup 'controle:c1|updateLabel[0]'
+Slack : -1.561
+TNS   : -4.661
+
+Type  : Slow Model Setup 'controle:c1|updateData[1]'
+Slack : -1.441
+TNS   : -9.177
+
+Type  : Slow Model Setup 'controle:c1|updateLabel[2]'
+Slack : -0.083
+TNS   : -0.161
+
+Type  : Slow Model Setup 'controle:c1|updateLabel[3]'
+Slack : 0.170
+TNS   : 0.000
+
+Type  : Slow Model Hold 'KEY[0]'
+Slack : -3.568
+TNS   : -89.497
+
+Type  : Slow Model Hold 'controle:c1|FU_add_sub:FU_add|Count:c|q[0]'
+Slack : -0.732
+TNS   : -3.720
+
+Type  : Slow Model Hold 'controle:c1|updateLabel[3]'
+Slack : 0.462
+TNS   : 0.000
+
+Type  : Slow Model Hold 'controle:c1|updateLabel[2]'
+Slack : 0.621
+TNS   : 0.000
+
+Type  : Slow Model Hold 'controle:c1|updateData[1]'
+Slack : 1.125
+TNS   : 0.000
+
+Type  : Slow Model Hold 'controle:c1|updateData[3]'
+Slack : 1.321
+TNS   : 0.000
+
+Type  : Slow Model Hold 'controle:c1|updateData[2]'
+Slack : 1.325
+TNS   : 0.000
+
+Type  : Slow Model Hold 'controle:c1|updateData[0]'
+Slack : 2.055
+TNS   : 0.000
+
+Type  : Slow Model Hold 'controle:c1|updateLabel[0]'
+Slack : 2.312
+TNS   : 0.000
+
+Type  : Slow Model Hold 'controle:c1|updateLabel[1]'
+Slack : 2.315
+TNS   : 0.000
+
+Type  : Slow Model Minimum Pulse Width 'KEY[0]'
+Slack : -1.222
+TNS   : -259.222
+
+Type  : Slow Model Minimum Pulse Width 'controle:c1|updateData[0]'
+Slack : -0.500
+TNS   : -9.000
+
+Type  : Slow Model Minimum Pulse Width 'controle:c1|updateData[1]'
+Slack : -0.500
+TNS   : -9.000
+
+Type  : Slow Model Minimum Pulse Width 'controle:c1|updateData[2]'
+Slack : -0.500
+TNS   : -9.000
+
+Type  : Slow Model Minimum Pulse Width 'controle:c1|updateData[3]'
+Slack : -0.500
+TNS   : -9.000
+
+Type  : Slow Model Minimum Pulse Width 'controle:c1|updateLabel[0]'
+Slack : -0.500
+TNS   : -3.000
+
+Type  : Slow Model Minimum Pulse Width 'controle:c1|updateLabel[1]'
+Slack : -0.500
+TNS   : -3.000
+
+Type  : Slow Model Minimum Pulse Width 'controle:c1|updateLabel[2]'
+Slack : -0.500
+TNS   : -3.000
+
+Type  : Slow Model Minimum Pulse Width 'controle:c1|updateLabel[3]'
+Slack : -0.500
+TNS   : -3.000
+
+Type  : Slow Model Minimum Pulse Width 'controle:c1|FU_add_sub:FU_add|Count:c|q[0]'
+Slack : 0.500
+TNS   : 0.000
+
+Type  : Fast Model Setup 'KEY[0]'
+Slack : -5.234
+TNS   : -335.044
+
+Type  : Fast Model Setup 'controle:c1|FU_add_sub:FU_add|Count:c|q[0]'
+Slack : -1.480
+TNS   : -11.211
+
+Type  : Fast Model Setup 'controle:c1|updateData[0]'
+Slack : -0.251
+TNS   : -1.027
+
+Type  : Fast Model Setup 'controle:c1|updateData[3]'
+Slack : -0.134
+TNS   : -0.134
+
+Type  : Fast Model Setup 'controle:c1|updateData[2]'
+Slack : -0.132
+TNS   : -0.135
+
+Type  : Fast Model Setup 'controle:c1|updateLabel[1]'
+Slack : -0.110
+TNS   : -0.321
+
+Type  : Fast Model Setup 'controle:c1|updateLabel[0]'
+Slack : -0.109
+TNS   : -0.316
+
+Type  : Fast Model Setup 'controle:c1|updateData[1]'
+Slack : -0.055
+TNS   : -0.092
+
+Type  : Fast Model Setup 'controle:c1|updateLabel[2]'
+Slack : 0.620
+TNS   : 0.000
+
+Type  : Fast Model Setup 'controle:c1|updateLabel[3]'
+Slack : 0.768
+TNS   : 0.000
+
+Type  : Fast Model Hold 'KEY[0]'
+Slack : -2.007
+TNS   : -67.021
+
+Type  : Fast Model Hold 'controle:c1|FU_add_sub:FU_add|Count:c|q[0]'
+Slack : -0.697
+TNS   : -4.923
+
+Type  : Fast Model Hold 'controle:c1|updateLabel[3]'
+Slack : 0.081
+TNS   : 0.000
+
+Type  : Fast Model Hold 'controle:c1|updateLabel[2]'
+Slack : 0.156
+TNS   : 0.000
+
+Type  : Fast Model Hold 'controle:c1|updateData[1]'
+Slack : 0.429
+TNS   : 0.000
+
+Type  : Fast Model Hold 'controle:c1|updateData[2]'
+Slack : 0.518
+TNS   : 0.000
+
+Type  : Fast Model Hold 'controle:c1|updateData[3]'
+Slack : 0.518
+TNS   : 0.000
+
+Type  : Fast Model Hold 'controle:c1|updateData[0]'
+Slack : 0.851
+TNS   : 0.000
+
+Type  : Fast Model Hold 'controle:c1|updateLabel[0]'
+Slack : 0.978
+TNS   : 0.000
+
+Type  : Fast Model Hold 'controle:c1|updateLabel[1]'
+Slack : 0.982
+TNS   : 0.000
+
+Type  : Fast Model Minimum Pulse Width 'KEY[0]'
+Slack : -1.222
+TNS   : -259.222
+
+Type  : Fast Model Minimum Pulse Width 'controle:c1|updateData[0]'
+Slack : -0.500
+TNS   : -9.000
+
+Type  : Fast Model Minimum Pulse Width 'controle:c1|updateData[1]'
+Slack : -0.500
+TNS   : -9.000
+
+Type  : Fast Model Minimum Pulse Width 'controle:c1|updateData[2]'
+Slack : -0.500
+TNS   : -9.000
+
+Type  : Fast Model Minimum Pulse Width 'controle:c1|updateData[3]'
+Slack : -0.500
+TNS   : -9.000
+
+Type  : Fast Model Minimum Pulse Width 'controle:c1|updateLabel[0]'
+Slack : -0.500
+TNS   : -3.000
+
+Type  : Fast Model Minimum Pulse Width 'controle:c1|updateLabel[1]'
+Slack : -0.500
+TNS   : -3.000
+
+Type  : Fast Model Minimum Pulse Width 'controle:c1|updateLabel[2]'
+Slack : -0.500
+TNS   : -3.000
+
+Type  : Fast Model Minimum Pulse Width 'controle:c1|updateLabel[3]'
+Slack : -0.500
+TNS   : -3.000
+
+Type  : Fast Model Minimum Pulse Width 'controle:c1|FU_add_sub:FU_add|Count:c|q[0]'
+Slack : 0.500
+TNS   : 0.000
+
+------------------------------------------------------------

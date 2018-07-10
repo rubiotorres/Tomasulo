@@ -1,0 +1,36 @@
+/**** GUARDA DADOS DENTRO DO REG ****/
+
+module RegistradorD(clk,InputData,DataControl,InputLabel,LabelControl,OutputLabel,OutputData);
+	parameter VAZIO = 9'b111111111;
+	parameter size = 8;
+	input [size:0] InputData,InputLabel;
+	input DataControl,LabelControl,clk;
+	output reg[size:0] OutputLabel,OutputData;
+	
+	initial begin
+		OutputLabel = VAZIO;
+		//OutputData = 9'b000000010; //TESTE SOMENTE COM MUL_DIV
+		OutputData = 9'b000000001;
+	end
+	
+	//always@(clk,DataControl,LabelControl) begin //SEMI_CERTO
+	//always@(negedge clk) begin
+		//if(DataControl) begin
+		//	OutputData = InputData;
+		//end
+		//if(LabelControl) begin
+		//		OutputLabel = InputLabel;
+		//end
+	//end
+	always@(posedge DataControl)begin
+		if(DataControl) begin
+			OutputData = InputData;
+		end
+	end
+	always@(posedge LabelControl)begin
+		if(LabelControl) begin
+				OutputLabel = InputLabel;
+		end
+	end
+	
+endmodule

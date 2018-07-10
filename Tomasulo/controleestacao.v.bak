@@ -1,0 +1,402 @@
+/*
+	9 bist para instruções
+	inst -> 0-2
+		000 - add
+		001 - sub
+		010 - mul
+		011 - div
+	regy -> 3-5
+	regx -> 6-8
+*/
+module CountTime(clk,q);
+	input clk;
+	output reg [20:0]q;
+	initial begin
+		q = 0;
+	end
+		
+	always@(posedge clk) begin
+			q = q + 1;
+	end
+endmodule
+module tomasulo(SW);
+	input SW;
+	/* ____4 instruções____*/
+	parameter SOM = 3'b000;
+	parameter SUB = 3'b001;
+	parameter MUL = 3'b010;
+	parameter DIV = 3'b011;
+	/*_____________________*/
+	parameter TAM_ADD_SUB = 2;
+	parameter TAM_MUL_DIV = 5;
+	parameter VAZIO = 9'b111111111;
+	parameter size = 8;
+	parameter QTD_REGS = 6;
+	integer i,j;
+	
+	wire [20:0]Time;
+	reg breakLoop;
+	reg [20:0]minInputTime;
+	reg clk,firstInst,firstInstMulDiv;
+	
+	//new Instruction
+	wire [size:0]InputInst;
+	wire [3:0]InputX,InputY,InputI;
+	assign InputX = InputInst[8:6];
+	assign InputY = InputInst[5:3];
+	assign InputI = InputInst[2:0];
+	
+	//controle de despacho
+	reg [2:0]AddSubFull,MulDivFull;
+	
+//FU info e vars
+	wire DoneMulDiv,DoneAddSub;
+	//Add_sub FU
+	reg RUN_AddSub;
+	reg [2:0]Op_AddSub,InputX_AddSub,InputLabel_AddSub;
+	wire [2:0]AddressX_AddSub,Label_AddSub;
+	reg [size:0]RegX_AddSub,RegY_AddSub;
+	wire [size:0]Result_AddSub;
+	//Mul_Div FU
+	reg RUN_MulDiv;
+	reg [2:0]Op_MulDiv,InputX_MulDiv,InputLabel_MulDiv;
+	wire [2:0]AddressX_MulDiv,Label_MulDiv;
+	reg [size:0]RegX_MulDiv,RegY_MulDiv;
+	wire [size:0]Result_MulDiv;
+	
+	
+	//regs info
+	wire [size:0]Tags[QTD_REGS:0];
+	wire [size:0]Regs[QTD_REGS:0];
+	reg [0:0]updateData[QTD_REGS:0];
+	reg [0:0]updateLabel[QTD_REGS:0];
+	reg [size:0]newData, newLabel; 
+	
+	//reservation station - 0-2(sub_add), 3-5(mul_div)
+	reg [0:0]Busy[TAM_MUL_DIV:0];
+	reg [size:0]ValueI[TAM_MUL_DIV:0];
+	reg [size:0]ValueJ[TAM_MUL_DIV:0];
+	reg [size:0]TagI[TAM_MUL_DIV:0];
+	reg [size:0]TagJ[TAM_MUL_DIV:0];	
+	reg [size:0]Insts[TAM_MUL_DIV:0];
+	reg [0:0]Exec[TAM_MUL_DIV:0];
+	reg [20:0]InputTime[TAM_MUL_DIV:0];
+	
+	wire [3:0]I,X,Y; //I-instruction, X-RegX Address, Y-RegY Address
+	
+	initial begin
+		AddSubFull = 0;
+		MulDivFull = 0;
+		firstInst = 1;
+		RUN_AddSub = 0;
+		RUN_MulDiv = 0;
+		firstInstMulDiv = 1;
+		//InputTime = 0;
+		for(i = 0; i <= QTD_REGS; i = i + 1) begin
+			updateLabel[i] = 0;
+			updateData[i] = 0;
+		end
+		for(i = 0; i <= TAM_MUL_DIV; i = i + 1) begin
+			Busy[i] = 0;
+			Exec[i] = 0;
+		end
+	end
+	
+	always @(clk) begin
+		breakLoop = 0;
+		for(i = 0; i <= QTD_REGS; i = i + 1) begin
+			updateLabel[i] = 0;
+			updateData[i] = 0;
+		end
+		@(posedge clk) begin
+		//add inst na estação de reserva de SOM e SUB
+		if(AddSubFull != 3 && (InputI == SOM || InputI == SUB)) begin
+			for(i = 0; i <= TAM_ADD_SUB && breakLoop != 1; i = i + 1) begin
+				if(Busy[i] == 0) begin
+					Busy[i] = 1;
+					Exec[i] = 0;
+					Insts[i] = InputInst;
+					InputTime[i] = Time;
+					if(Tags[InputX] == VAZIO) begin
+						ValueI[i] = Regs[InputX];
+						TagI[i] = VAZIO;
+					end
+					else begin
+						TagI[i] = Tags[InputX]; 
+						ValueI[i] = VAZIO;
+					end
+					if(Tags[InputY] == VAZIO) begin
+						ValueJ[i] = Regs[InputY];
+						TagJ[i] = VAZIO;
+					end
+					else begin
+						TagJ[i] = Tags[InputY]; 
+						ValueJ[i] = VAZIO;
+					end
+					newLabel = i;
+					updateLabel[InputX] = 1;
+					AddSubFull = AddSubFull + 1;
+					breakLoop = 1;
+					$display("%d",InputX);
+				end
+			end
+		end
+		
+		breakLoop = 0;
+		//add inst na estação de reserva de MUL e DIV
+		if(MulDivFull != 3 && (InputI == MUL || InputI == DIV)) begin
+			for(i = TAM_ADD_SUB + 1; i <= TAM_MUL_DIV && breakLoop != 1; i = i + 1) begin
+				if(Busy[i] == 0) begin
+					Busy[i] = 1;
+					Exec[i] = 0;
+					Insts[i] = InputInst;
+					InputTime[i] = Time;
+					if(Tags[InputX] == VAZIO) begin
+						ValueI[i] = Regs[InputX];
+						TagI[i] = VAZIO;
+					end
+					else begin
+						TagI[i] = Tags[InputX]; 
+						ValueI[i] = VAZIO;
+					end
+					if(Tags[InputY] == VAZIO) begin
+						ValueJ[i] = Regs[InputY];
+						TagJ[i] = VAZIO;
+					end
+					else begin
+						TagJ[i] = Tags[InputY]; 
+						ValueJ[i] = VAZIO;
+					end
+
+					newLabel = i;
+					updateLabel[InputX] = 1;
+					MulDivFull = MulDivFull + 1;
+					breakLoop = 1;
+					$display("%d",InputX);
+				end
+			end
+		end
+		end
+		if(DoneAddSub && DoneMulDiv) begin
+			$display("INSIDE BOTH");
+			if(InputTime[Label_AddSub] < InputTime[Label_MulDiv])begin
+				RUN_AddSub = 0;
+				newData = Result_AddSub;
+				updateData[AddressX_AddSub] = 1;
+				Busy[Label_AddSub] = 0;
+				if(!(AddressX_AddSub == InputX) && (Tags[AddressX_AddSub] == Label_AddSub))begin
+					wait(updateLabel[0] || updateLabel[1]||updateLabel[2]||updateLabel[3]||updateLabel[4]|| updateLabel[5]||updateLabel[6] == 0) #1  updateLabel[AddressX_AddSub] = 1;
+					newLabel = VAZIO;
+				end
+
+				if(AddSubFull != 0 && DoneAddSub)
+					AddSubFull = AddSubFull - 1;
+				minInputTime = VAZIO;
+				
+				for(i = 0; i <= TAM_MUL_DIV; i = i + 1) begin	
+					if(TagI[i] == Label_AddSub) begin
+						TagI[i] = VAZIO;
+						ValueI[i] = Result_AddSub; //TODO - pode da problema de sync 
+					end
+					if(TagJ[i] == Label_AddSub) begin
+						TagJ[i] = VAZIO;
+						ValueJ[i] = Result_AddSub; //TODO - pode da problema de sync
+					end
+				end
+
+				for(i = 0; i <= TAM_ADD_SUB; i = i + 1) begin
+					if(Exec[i] == 0 && ((ValueI[i] != VAZIO) && (ValueJ[i] != VAZIO))) begin
+						if(minInputTime == VAZIO) minInputTime = i;
+						else if(InputTime[minInputTime] > InputTime[i]) minInputTime = i; //pega a instrucao para ser executada
+					end
+				end
+				if(minInputTime != VAZIO) begin
+					Exec[minInputTime] = 1;
+					Op_AddSub = Insts[minInputTime][2:0];
+					//if(TagJ[minInputTime] == Label_AddSub)
+						//RegY_AddSub = Result_AddSub;
+					//else
+						RegY_AddSub = ValueJ[minInputTime];
+					//if(TagI[minInputTime] == Label_AddSub)
+						//RegX_AddSub = Result_AddSub;
+					//else
+						RegX_AddSub = ValueI[minInputTime];
+					
+					InputX_AddSub = Insts[minInputTime][8:6];
+					InputLabel_AddSub = minInputTime;
+					RUN_AddSub = 1;
+				end
+			end
+			else begin
+				RUN_MulDiv = 0;
+				newData = Result_MulDiv;
+				updateData[AddressX_MulDiv] = 1;
+				Busy[Label_MulDiv] = 0;
+				if(!(AddressX_MulDiv == InputX) && (Tags[AddressX_MulDiv] == Label_MulDiv))begin
+					wait( updateLabel[0] || updateLabel[1]||updateLabel[2]||updateLabel[3]||updateLabel[4]|| updateLabel[5]||updateLabel[6] == 0) #1 updateLabel[AddressX_MulDiv] = 1;
+					newLabel = VAZIO;
+				end
+
+				if(MulDivFull != 0 && DoneMulDiv)
+					MulDivFull = MulDivFull - 1;
+				minInputTime = VAZIO;
+				
+				for(i = 0; i <= TAM_MUL_DIV; i = i + 1) begin	
+					if(TagI[i] == Label_MulDiv) begin
+						TagI[i] = VAZIO;
+						ValueI[i] = Result_MulDiv; //TODO - pode da problema de sync 
+					end
+					if(TagJ[i] == Label_MulDiv) begin
+						TagJ[i] = VAZIO;
+						ValueJ[i] = Result_MulDiv; //TODO - pode da problema de sync
+					end
+				end
+
+				for(i = TAM_ADD_SUB + 1; i <= TAM_MUL_DIV; i = i + 1) begin
+					if(Exec[i] == 0 && ((ValueI[i] != VAZIO ) && (ValueJ[i] != VAZIO ))) begin
+						if(minInputTime == VAZIO) minInputTime = i;
+						else if(InputTime[minInputTime] > InputTime[i]) minInputTime = i; //pega a instrucao para ser executada
+					end
+				end
+				if(minInputTime != VAZIO) begin
+					Exec[minInputTime] = 1;
+					Op_MulDiv = Insts[minInputTime][2:0];
+					//if(TagJ[minInputTime] == Label_MulDiv)
+					//	RegY_MulDiv = Result_MulDiv;
+					//else
+						RegY_MulDiv = ValueJ[minInputTime];
+					//if(TagI[minInputTime] == Label_MulDiv)
+						//RegX_MulDiv = Result_MulDiv;
+					//else
+						RegX_MulDiv = ValueI[minInputTime];
+					
+					InputX_MulDiv = Insts[minInputTime][8:6];
+					InputLabel_MulDiv = minInputTime;
+					RUN_MulDiv = 1;
+				end
+			end
+		end
+		else begin
+			$display("INSIDE ELSE");
+			if(DoneAddSub || (firstInst) || !RUN_AddSub)begin
+				$display("INSIDE ADD_SUB");
+				minInputTime = VAZIO;
+				if(DoneAddSub) begin
+					RUN_AddSub = 0;
+					//firstInst = 0;
+					newData = Result_AddSub;
+					updateData[AddressX_AddSub] = 1;
+					Busy[Label_AddSub] = 0;
+					if(!(AddressX_AddSub == InputX) && (Tags[AddressX_AddSub] == Label_AddSub))begin
+						wait( updateLabel[0] || updateLabel[1]||updateLabel[2]||updateLabel[3]||updateLabel[4]|| updateLabel[5]||updateLabel[6] == 0) #1  updateLabel[AddressX_AddSub] = 1;
+						newLabel = VAZIO;
+					end
+
+					if(AddSubFull != 0 && DoneAddSub)
+						AddSubFull = AddSubFull - 1;
+					
+					
+					for(i = 0; i <= TAM_MUL_DIV; i = i + 1) begin	
+						if(TagI[i] == Label_AddSub) begin
+							TagI[i] = VAZIO;
+							ValueI[i] = Result_AddSub; //TODO - pode da problema de sync 
+						end
+						if(TagJ[i] == Label_AddSub) begin
+							TagJ[i] = VAZIO;
+							ValueJ[i] = Result_AddSub; //TODO - pode da problema de sync
+						end
+					end
+				end
+
+				for(i = 0; i <= TAM_ADD_SUB; i = i + 1) begin
+					if(Exec[i] == 0 && ((ValueI[i] != VAZIO) && (ValueJ[i] != VAZIO))) begin
+						if(minInputTime == VAZIO) minInputTime = i;
+						else if(InputTime[minInputTime] > InputTime[i]) minInputTime = i; //pega a instrucao para ser executada
+					end
+				end
+				$display("ADD_SUB MIN - %b", minInputTime);					
+				if(minInputTime != VAZIO) begin
+					firstInst = 0;
+					Exec[minInputTime] = 1;
+					Op_AddSub = Insts[minInputTime][2:0];
+					//if(TagJ[minInputTime] == Label_AddSub)
+						//RegY_AddSub = Result_AddSub;
+					//else
+						RegY_AddSub = ValueJ[minInputTime];
+					//if(TagI[minInputTime] == Label_AddSub)
+						//RegX_AddSub = Result_AddSub;
+					//else
+						RegX_AddSub = ValueI[minInputTime];
+					
+					InputX_AddSub = Insts[minInputTime][8:6];
+					InputLabel_AddSub = minInputTime;
+					RUN_AddSub = 1;
+				end
+			end
+			if(DoneMulDiv || (firstInstMulDiv) || !RUN_MulDiv)begin
+				$display("INSIDE MULDIV BLOCK");
+				minInputTime = VAZIO;
+				if(DoneMulDiv) begin
+					RUN_MulDiv = 0;
+					
+					newData = Result_MulDiv;
+					updateData[AddressX_MulDiv] = 1;
+					Busy[Label_MulDiv] = 0;
+					if(!(AddressX_MulDiv == InputX) && (Tags[AddressX_MulDiv] == Label_MulDiv))begin
+						wait( updateLabel[0] || updateLabel[1]||updateLabel[2]||updateLabel[3]||updateLabel[4]|| updateLabel[5]||updateLabel[6] == 0) #1 updateLabel[AddressX_MulDiv] = 1;
+						newLabel = VAZIO;
+					end
+
+					if(MulDivFull != 0 && DoneMulDiv)
+						MulDivFull = MulDivFull - 1;
+					minInputTime = VAZIO;
+					
+					for(j = 0; j <= TAM_MUL_DIV; j = j + 1) begin	
+						if(TagI[j] == Label_MulDiv) begin
+							TagI[j] = VAZIO;
+							ValueI[j] = Result_MulDiv; //TODO - pode da problema de sync 
+						end
+						if(TagJ[j] == Label_MulDiv) begin
+							TagJ[j] = VAZIO;
+							ValueJ[j] = Result_MulDiv; //TODO - pode da problema de sync
+						end
+					end
+				end
+				for(j = TAM_ADD_SUB + 1; j <= TAM_MUL_DIV; j = j + 1) begin
+					if(Exec[j] == 0 && ((ValueI[j] != VAZIO ) && (ValueJ[j] != VAZIO ))) begin
+						if(minInputTime == VAZIO)begin minInputTime = j; $display("%b",j); end
+						else if(InputTime[minInputTime] > InputTime[j]) minInputTime = j; //pega a instrucao para ser executada
+					end
+				end
+				$display("MIN - %b", minInputTime);
+				if(minInputTime != VAZIO) begin
+					firstInstMulDiv = 0;
+					Exec[minInputTime] = 1;
+					Op_MulDiv = Insts[minInputTime][2:0];
+					//if(TagJ[minInputTime] == Label_MulDiv)
+					//	RegY_MulDiv = Result_MulDiv;
+					//else
+						RegY_MulDiv = ValueJ[minInputTime];
+					//if(TagI[minInputTime] == Label_MulDiv)
+						//RegX_MulDiv = Result_MulDiv;
+					//else
+						RegX_MulDiv = ValueI[minInputTime];
+					
+					InputX_MulDiv = Insts[minInputTime][8:6];
+					InputLabel_MulDiv = minInputTime;
+					RUN_MulDiv = 1;
+				end
+			end
+		end
+	end
+	
+	registradorD r0(clk,newData,updateData[0],newLabel,updateLabel[0],Tags[0],Regs[0]);
+	registradorD r1(clk,newData,updateData[1],newLabel,updateLabel[1],Tags[1],Regs[1]);
+	registradorD r2(clk,newData,updateData[2],newLabel,updateLabel[2],Tags[2],Regs[2]);
+	registradorD r3(clk,newData,updateData[3],newLabel,updateLabel[3],Tags[3],Regs[3]);
+	CountTime my_time(clk,Time);
+	FU_add_sub FU1(clk,RUN_AddSub,RegX_AddSub,RegY_AddSub,Op_AddSub,Result_AddSub,DoneAddSub,InputX_AddSub,InputLabel_AddSub,AddressX_AddSub,Label_AddSub);
+	FU_mul_div FU2(clk,RUN_MulDiv,RegX_MulDiv,RegY_MulDiv,Op_MulDiv,Result_MulDiv,DoneMulDiv,InputX_MulDiv,InputLabel_MulDiv,AddressX_MulDiv,Label_MulDiv);
+	iQueue instructions(clk,0,InputInst,AddSubFull,MulDivFull);
+	
+endmodule
